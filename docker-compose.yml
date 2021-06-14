@@ -1,0 +1,45 @@
+version: "3.5"
+services:
+    srvbook-webserver:
+      image: nginx:alpine
+      container_name: webserver
+      working_dir: /application
+      volumes:
+          - ../servebooking:/application
+          - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      ports:
+        - "8081:80"
+      depends_on: 
+        - srvbook-php-fpm
+      networks:
+        - srvbook
+
+    srvbook-php-fpm:
+      image: php:7.4-fpm
+      environment:
+        PHP_IDE_CONFIG: "serverName=SRVBOOK"
+      container_name: php-fpm
+      working_dir: /application
+      volumes:
+        - ../servebooking:/application
+        - ./php/www2.conf:/usr/local/etc/php-fpm.d/www2.conf
+        - ./php/php-ini-overrides.ini:/usr/local/etc/php/conf.d/99-overrides.ini
+      networks:
+        - srvbook
+
+    srvbook-database:
+      image: postgres:latest
+      container_name: book-database
+      volumes:
+        - ../postgres/data:/var/lib/postgresql/data
+      restart: always
+      environment:
+        POSTGRES_PASSWORD: j3FziTBNYQ
+        POSTGRES_USER: booking_admin
+        POSTGRES_DB: serve_booking
+      networks:
+        - srvbook
+
+networks:
+  srvbook:
+    name: srvbook
